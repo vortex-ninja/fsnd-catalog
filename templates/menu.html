@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+
+
+{% block navbar_content %}
+ <a href="{{ url_for('newMenuItem', restaurant_id=restaurant_id)}}">Add new menu item</a>
+{% endblock %}
+
+{% block page_content %}
+
+<ol>
+  {% for item in items %}
+  <div class="row">
+    <div class="col-sm-8"><li><strong>{{ item['name'] }} - {{ item['price'] }}</strong>
+     <br> {{ item['description'] }}</li></div>
+    <div class="col-sm-4">
+    <a href="{{ url_for('deleteMenuItem', restaurant_id=restaurant_id, menu_id=item['id']) }}"
+             role="button" class="btn btn-default btn-sm">Delete</a>
+
+    <a href="{{ url_for('editMenuItem', restaurant_id=restaurant_id, menu_id=item['id']) }}"
+             role="button" class="btn btn-default btn-sm">Edit</a>
+      </div>
+
+  </div>
+
+{% endfor %}
+</ol>
+
+
+{% endblock %}

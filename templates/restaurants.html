@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+
+
+{% block navbar_content %}
+ <a href="{{ url_for('newRestaurant')}}">Add new restaurant</a>
+{% endblock %}
+
+{% block page_content %}
+
+<ol>
+  {% for restaurant in restaurants %}
+
+    <div class="row">
+       <div class="col-sm-8"><li>{{ restaurant['name'] }}</div>
+
+       <div class="col-sm-4">
+       <a href="{{ url_for('deleteRestaurant', restaurant_id=restaurant['id']) }}"
+          role="button" class="btn btn-default btn-sm">Delete</a>
+       <a href="{{ url_for('editRestaurant', restaurant_id=restaurant['id']) }}"
+          role="button" class="btn btn-default btn-sm">Edit</a>
+       <a href="{{ url_for('showMenu', restaurant_id=restaurant['id']) }}"
+          role="button" class="btn btn-default btn-sm">View menu</a>
+       </li>
+       </div>
+    </div>
+  {% endfor %}
+</ol>
+
+
+{% endblock %}

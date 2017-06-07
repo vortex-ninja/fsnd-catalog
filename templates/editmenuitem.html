@@ -1,0 +1,19 @@
+{% import 'bootstrap/wtf.html' as wtf %}
+{% extends 'base.html' %}
+
+
+
+
+
+{% block page_content %}
+
+<h3 class="page-header">Edit menu item</h3>
+
+<p>Edit menu item <i>{{ menu_item }}</i> in restaurant <i>{{ restaurant }}</i></p>
+
+{{ wtf.quick_form(form) }}
+<a href="{{ url_for('showMenu', restaurant_id=restaurant_id) }}" class="btn btn-default">Cancel</a>
+
+
+
+{% endblock %}

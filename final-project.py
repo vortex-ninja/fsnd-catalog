@@ -1,49 +1,115 @@
-from flask import Flask
+from flask import Flask, render_template, url_for, request, redirect
+from flask_bootstrap import Bootstrap
+from forms import CreateResForm, EditResForm, DeleteForm
+from forms import AddMenuItemForm, EditMenuItemForm
 
 app = Flask(__name__)
+Bootstrap(app)
+
+
+#Fake Restaurants
+restaurant = {'name': 'The CRUDdy Crab', 'id': '1'}
+
+restaurants = [{'name': 'The CRUDdy Crab', 'id': '1'}, {'name':'Blue Burgers', 'id':'2'},{'name':'Taco Hut', 'id':'3'}]
+
+
+#Fake Menu Items
+items = [ {'name':'Cheese Pizza', 'description':'made with fresh cheese', 'price':'$5.99','course' :'Entree', 'id':'1'}, {'name':'Chocolate Cake','description':'made with Dutch Chocolate', 'price':'$3.99', 'course':'Dessert','id':'2'},{'name':'Caesar Salad', 'description':'with fresh organic vegetables','price':'$5.99', 'course':'Entree','id':'3'},{'name':'Iced Tea', 'description':'with lemon','price':'$.99', 'course':'Beverage','id':'4'},{'name':'Spinach Dip', 'description':'creamy dip with fresh spinach','price':'$1.99', 'course':'Appetizer','id':'5'} ]
+item =  {'name':'Cheese Pizza','description':'made with fresh cheese','price':'$5.99','course' :'Entree'}
 
 
 @app.route('/')
 @app.route('/restaurants')
 def showRestaurants():
-    return 'This page will show all my restaurants'
+    return render_template('restaurants.html', restaurants=restaurants)
 
 
-@app.route('/restaurant/new')
+@app.route('/restaurant/new', methods=['GET', 'POST'])
 def newRestaurant():
-    return 'This page will be for making a new restaurant'
+    form = CreateResForm()
+    if form.validate_on_submit():  # checks whether it's a POST request and if data is valid
+        pass
+
+    return render_template('newrestaurant.html', form=form)
 
 
-@app.route('/restaurant/<int:restaurant_id>/edit')
+@app.route('/restaurant/<int:restaurant_id>/edit', methods=['GET', 'POST'])
 def editRestaurant(restaurant_id):
-    return 'This page will be for editing restaurant {}'.format(restaurant_id)
+
+    form = EditResForm()
+    if form.validate_on_submit():
+        pass
+
+    print(restaurant_id)
+    for r in restaurants:
+        if r['id'] == str(restaurant_id):
+            name = r['name']
+    return render_template('editrestaurant.html', form=form, name=name)
 
 
-@app.route('/restaurant/<int:restaurant_id>/delete')
+@app.route('/restaurant/<int:restaurant_id>/delete', methods=['GET', 'POST'])
 def deleteRestaurant(restaurant_id):
-    return 'This page will be for deleting restaurant {}'.format(restaurant_id)
+    form = DeleteForm()
+    if form.validate_on_submit():
+        pass
+
+    for r in restaurants:
+        if r['id'] == str(restaurant_id):
+            name = r['name']
+    return render_template('deleterestaurant.html', form=form, name=name)
 
 
 @app.route('/restaurant/<int:restaurant_id>')
 @app.route('/restaurant/<int:restaurant_id>/menu')
 def showMenu(restaurant_id):
-    return 'This page is the menu for restaurant {}'.format(restaurant_id)
+    return render_template('menu.html', restaurant_id=restaurant_id, items=items)
 
 
-@app.route('/restaurant/<int:restaurant_id>/menu/new')
+@app.route('/restaurant/<int:restaurant_id>/menu/new', methods=['GET', 'POST'])
 def newMenuItem(restaurant_id):
-    return 'This page is for making a new menu item for restaurant {}' \
-           .format(restaurant_id)
+    form = AddMenuItemForm()
+    if form.validate_on_submit():
+        pass
+
+    for r in restaurants:
+        if r['id'] == str(restaurant_id):
+            name = r['name']
+    return render_template('newmenuitem.html',
+                           form=form,
+                           name=name,
+                           restaurant_id=restaurant_id)
 
 
-@app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/edit')
+@app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/edit', methods=['GET', 'POST'])
 def editMenuItem(restaurant_id, menu_id):
-    return 'This page is for editing menu item {}'.format(menu_id)
+    form = EditMenuItemForm()
+    form.course.data = 'Beverage'
+    if form.validate_on_submit():
+        pass
+
+    for r in restaurants:
+        if r['id'] == str(restaurant_id):
+            name = r['name']
+    return render_template('editmenuitem.html',
+                           form=form,
+                           restaurant=name,
+                           menu_item='gryzka',
+                           restaurant_id=restaurant_id)
 
 
-@app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/delete')
+@app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/delete', methods=['GET', 'POST'])
 def deleteMenuItem(restaurant_id, menu_id):
-    return 'This page is for deleting menu item {}'.format(menu_id)
+    form = DeleteForm()
+    if form.validate_on_submit():
+        pass
+
+    for r in restaurants:
+        if r['id'] == str(restaurant_id):
+            name = r['name']
+    return render_template('deletemenuitem.html',
+                           form=form,
+                           menu_item='gryzka',
+                           restaurant_id=restaurant_id)
 
 
 if __name__ == '__main__':

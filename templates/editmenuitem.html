@@ -9,10 +9,10 @@
 
 <h3 class="page-header">Edit menu item</h3>
 
-<p>Edit menu item <i>{{ menu_item }}</i> in restaurant <i>{{ restaurant }}</i></p>
+<p>Edit menu item <i>{{ item.name }}</i> in restaurant <i>{{ restaurant.name }}</i></p>
 
 {{ wtf.quick_form(form) }}
-<a href="{{ url_for('showMenu', restaurant_id=restaurant_id) }}" class="btn btn-default">Cancel</a>
+<a href="{{ url_for('showMenu', restaurant_id=restaurant.id) }}" class="btn btn-default">Cancel</a>
 
 
 

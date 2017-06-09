@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, request, redirect, flash
+from flask import Flask, render_template, url_for, redirect, flash
 from flask import jsonify
 from flask_bootstrap import Bootstrap
 from forms import CreateResForm, EditResForm, DeleteForm
@@ -51,7 +51,9 @@ def editRestaurant(restaurant_id):
         flash('Restaurant successfully edited.')
         return redirect(url_for('showRestaurants'))
 
-    return render_template('editrestaurant.html', form=form, name=restaurant.name)
+    return render_template('editrestaurant.html',
+                           form=form,
+                           name=restaurant.name)
 
 
 @app.route('/restaurant/<int:restaurant_id>/delete', methods=['GET', 'POST'])
@@ -64,7 +66,9 @@ def deleteRestaurant(restaurant_id):
         flash('Restaurant successfully deleted')
         return redirect(url_for('showRestaurants'))
 
-    return render_template('deleterestaurant.html', form=form, name=restaurant.name)
+    return render_template('deleterestaurant.html',
+                           form=form,
+                           name=restaurant.name)
 
 
 @app.route('/restaurant/<int:restaurant_id>')
@@ -98,13 +102,14 @@ def newMenuItem(restaurant_id):
                            restaurant=restaurant)
 
 
-@app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/edit', methods=['GET', 'POST'])
+@app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/edit',
+           methods=['GET', 'POST'])
 def editMenuItem(restaurant_id, menu_id):
     form = EditMenuItemForm()
     restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
     item = session.query(MenuItem).filter_by(id=menu_id).one()
 
-    if form.validate_on_submit(): # How to assign values more consicely
+    if form.validate_on_submit():  # How to assign values more consicely
         item.name = form.name.data
         item.course = form.course.data
         item.description = form.description.data
@@ -125,7 +130,8 @@ def editMenuItem(restaurant_id, menu_id):
                            item=item)
 
 
-@app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/delete', methods=['GET', 'POST'])
+@app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/delete',
+           methods=['GET', 'POST'])
 def deleteMenuItem(restaurant_id, menu_id):
     form = DeleteForm()
     restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
@@ -146,7 +152,7 @@ def deleteMenuItem(restaurant_id, menu_id):
 @app.route('/restaurants/JSON')
 def restaurantsJSON():
     restaurants = session.query(Restaurant).all()
-    return jsonify(Restaurants=[restaurant.serialize for restaurant in restaurants])
+    return jsonify(Restaurants=[r.serialize for r in restaurants])
 
 
 @app.route('/restaurant/<int:restaurant_id>/menu/JSON')

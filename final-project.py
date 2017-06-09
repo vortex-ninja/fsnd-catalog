@@ -1,4 +1,5 @@
 from flask import Flask, render_template, url_for, request, redirect, flash
+from flask import jsonify
 from flask_bootstrap import Bootstrap
 from forms import CreateResForm, EditResForm, DeleteForm
 from forms import AddMenuItemForm, EditMenuItemForm
@@ -134,6 +135,24 @@ def deleteMenuItem(restaurant_id, menu_id):
                            form=form,
                            restaurant=restaurant,
                            item=item)
+
+
+@app.route('/restaurants/JSON')
+def restaurantsJSON():
+    restaurants = session.query(Restaurant).all()
+    return jsonify(Restaurants=[restaurant.serialize for restaurant in restaurants])
+
+
+@app.route('/restaurant/<int:restaurant_id>/menu/JSON')
+def menusJSON(restaurant_id):
+    menus = session.query(MenuItem).filter_by(restaurant_id=restaurant_id).all()
+    return jsonify(MenuItems=[menu.serialize for menu in menus])
+
+
+@app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/JSON')
+def menuItemJSON(restaurant_id, menu_id):
+    menu = session.query(MenuItem).filter_by(id=menu_id).one_or_none()
+    return jsonify(MenuItem=[menu.serialize])
 
 
 if __name__ == '__main__':

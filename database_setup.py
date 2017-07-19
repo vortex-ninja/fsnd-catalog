@@ -6,10 +6,10 @@ from sqlalchemy import create_engine
 Base = declarative_base()
 
 
-class Restaurant(Base):
-    __tablename__ = 'restaurant'
+class Category(Base):
+    __tablename__ = 'category'
 
-    name = Column(String(80), nullable=False)
+    name = Column(String(), nullable=False)
     id = Column(Integer, primary_key=True)
 
     @property
@@ -20,16 +20,14 @@ class Restaurant(Base):
         }
 
 
-class MenuItem(Base):
-    __tablename__ = 'menu_item'
+class Item(Base):
+    __tablename__ = 'item'
 
-    name = Column(String(80), nullable=False)
+    name = Column(String(), nullable=False)
     id = Column(Integer, primary_key=True)
-    course = Column(String(50))
-    description = Column(String(250))
-    price = Column(String(20))
-    restaurant_id = Column(Integer, ForeignKey('restaurant.id'))
-    restaurant = relationship(Restaurant)
+    description = Column(String()
+    category_id = Column(Integer, ForeignKey('category.id'))
+    restaurant = relationship(Category)
 
     @property
     def serialize(self):
@@ -37,12 +35,11 @@ class MenuItem(Base):
             'name': self.name,
             'description': self.description,
             'id': self.id,
-            'price': self.price,
-            'course': self.course,
+            'cat_id': self.category_id,
         }
 
 
 # This should go at the end of the file
 
-engine = create_engine('sqlite:///restaurantmenu.db')
+engine = create_engine('sqlite:///catalog.db')
 Base.metadata.create_all(engine)

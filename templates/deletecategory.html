@@ -1,0 +1,9 @@
+{% import 'bootstrap/wtf.html' as wtf %}
+{% extends 'base.html' %}
+
+
+{% block page_content %}
+    <h3 class="page-header">Delete category</h3>
+    <p>Are you sure you want to delete category <i> {{ name }}</i>?</p>
+    {{ wtf.quick_form(form) }}
+{% endblock %}

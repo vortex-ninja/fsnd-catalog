@@ -22,19 +22,15 @@
 
     <div class="row">
        <div class="col-sm-6">
-       <h3>Categories</h3>
-       <ul>
-          {% for category in categories %}
-            <li>{{ category.id }} -- {{ category.name }}</li>
-          {% endfor %}
-        </ul>
+       <h3>Category</h3>
+        {{ category.name }}
        </div>
-       
+
        <div class="col-sm-6">
-       <h3>Latest Items</h3>
+       <h3>Items</h3>
         <ul>
           {% for item in items %}
-          <li>{{ item.id }} -- {{ item.name }} -- {{ item.date_created }} -- {{ item.category_id }}</li>
+            <li>{{ item.id }} -- {{ item.name }} -- {{ item.date_created }} -- {{ item.category_id }}</li>
           {% endfor %}
         </ul>
        </div>

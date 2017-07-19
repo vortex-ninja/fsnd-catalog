@@ -1,0 +1,9 @@
+{% import 'bootstrap/wtf.html' as wtf %}
+{% extends 'base.html' %}
+
+
+{% block page_content %}
+    <h3 class="page-header">Add menu item</h3>
+    <p>Add new item for category <i>{{ category.name }}</i></p>
+    {{ wtf.quick_form(form) }}
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+
+
+{% block navbar_content %}
+{% endblock %}
+
+{% block page_content %}
+
+<div class="row">
+  <div class="col-sm-4">
+    {% for message in get_flashed_messages() %}
+      <div class="alert alert-warning">
+        <button type="button" class="close" data-dismiss="alert">x</button>
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+
+
+    <div class="row">
+       <div class="col-sm-6">
+       <h3>Categories</h3>
+       <ul>
+          {% for category in categories %}
+            <li>{{ category.name }}</li>
+          {% endfor %}
+        </ul>
+       </div>
+       
+       <div class="col-sm-6">
+       <h3>Latest Items</h3>
+        <ul>
+          {% for item in items %}
+            <li>{{ item.name }}</li>
+          {% endfor %}
+        </ul>
+       </div>
+    </div>
+
+
+
+{% endblock %}

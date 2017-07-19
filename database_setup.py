@@ -1,7 +1,8 @@
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
+from sqlalchemy.sql import func
 
 Base = declarative_base()
 
@@ -25,9 +26,10 @@ class Item(Base):
 
     name = Column(String(), nullable=False)
     id = Column(Integer, primary_key=True)
-    description = Column(String()
+    description = Column(String())
+    date_created = Column(DateTime(timezone=True), server_default=func.now())
     category_id = Column(Integer, ForeignKey('category.id'))
-    restaurant = relationship(Category)
+    category = relationship(Category)
 
     @property
     def serialize(self):
@@ -36,6 +38,7 @@ class Item(Base):
             'description': self.description,
             'id': self.id,
             'cat_id': self.category_id,
+            'date_created': self.date_created,
         }
 
 

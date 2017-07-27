@@ -1,0 +1,8 @@
+{% import 'bootstrap/wtf.html' as wtf %}
+{% extends 'base.html' %}
+
+
+{% block page_content %}
+    <h3 class="page-header">{{ item.name }}</h3>
+    <p>{{ item.description }}</p>
+{% endblock %}

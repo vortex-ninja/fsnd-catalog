@@ -8,6 +8,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Category, Item, User
 from oauth2client.client import flow_from_clientsecrets, FlowExchangeError
+from oauth2client.client import OAuth2Credentials
 import random
 import string
 import httplib2
@@ -48,6 +49,8 @@ def gconnect():
     # Get code sent by ajax request from login.html signInCallback function
     code = request.data
 
+    # Get Credentials object
+
     try:
         # Create flow object from client_secrets.json
 
@@ -66,12 +69,16 @@ def gconnect():
 
     h = httplib2.Http()
     access_token = credentials.access_token
-    url = credentials.token_info_uri + '?access_token={}'.format(access_token)
+    token_info_uri = credentials.token_info_uri
+    url = '{}?access_token={}'.format(token_info_uri, access_token)
 
 
 
     content = h.request(url)[1].decode('utf-8')
     content = json.loads(content)
+
+    print('CONTENT: ')
+    print(content)
 
 
     error = content.get('error_description')
@@ -299,6 +306,152 @@ def showItem(category_id, item_id):
 # def menuItemJSON(category_id, item_id):
 #     menu = session.query(Item).filter_by(id=item_id).one_or_none()
 #     return jsonify(Item=[menu.serialize])
+
+
+
+@app.route('/slogin')
+def slogin():
+    if 'credentials' not in login_session:
+        return redirect(url_for('oauth2callback'))
+    credentials = OAuth2Credentials.from_json(login_session['credentials'])
+
+    if credentials.access_token_expired:
+        return redirect(url_for('oauth2callback'))
+    else:
+
+        # Check if the user is already logged in
+
+        if 'gplus_id' in login_session:
+            flash("You're already logged in.")
+        else:
+            login_session['gplus_id'] = credentials.id_token['sub']
+
+            # Make an API call to user_info endpoint to get more data about the user
+
+            h = httplib2.Http()
+            api_url = 'https://www.googleapis.com/oauth2/v3/userinfo'
+            url = '{}?access_token={}'.format(api_url, credentials.access_token)
+
+            response, content = h.request(url)
+
+
+            content = json.loads(content.decode('utf-8'))
+            
+            print('RESPONSE: ')
+            print(response)
+            print('USER CONTENT: ')
+            print(content)
+
+            flash("You've logged in.")
+
+
+
+        return redirect(url_for('mainPage'))
+        #return redirect(url_for('mainPage'))
+
+
+@app.route('/oauth2callback')
+def oauth2callback():
+
+    # As per advice from Google this view doesn't render any html in order not to
+    # reveal any query parameters in the url (like state token, or auth code)
+    # It only redirects to other views
+
+    flow = flow_from_clientsecrets('client_secrets.json',
+                                    scope='openid email',
+                                    redirect_uri=url_for('oauth2callback', _external=True))
+
+    if 'code' not in request.args:
+
+        # CSRF protection
+        state = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(32))
+        login_session['state'] = state
+        flow.params['state'] = state
+        auth_uri = flow.step1_get_authorize_url()
+
+        return redirect(auth_uri)
+    else:
+        # Check if the state token returned in the response 
+        # is the same as one saved in login_session
+        if request.args.get('state', '') != login_session['state']:
+            return redirect(url_for('auth_error', error='Sheeeeeeeeeeeeeeeet!'))
+
+        # Get the auth code from request's arguments
+
+        auth_code = request.args.get('code')
+
+        # Exchange auth code for a credentials object
+        credentials = flow.step2_exchange(auth_code)
+
+
+
+        # Token validation
+        error = validate_access_token(credentials)
+
+        # if there are errors in validation redirect to an error page
+        if error is not None:
+            return redirect(url_for('auth_error', error=error))
+
+        # Save credentials object
+
+        login_session['credentials'] = credentials.to_json()
+
+
+        return redirect(url_for('slogin'))
+
+
+@app.route('/slogout')
+def slogout():
+    if 'credentials' in login_session and 'gplus_id' in login_session:
+        del login_session['credentials']
+        del login_session['gplus_id']
+        flash("You've been logged out")
+    else:
+        flash("You're not logged in")
+
+    return redirect(url_for('mainPage'))
+
+@app.route('/auth_error')
+def auth_error():
+    return request.args.get('error')
+
+
+
+# Access token validation
+
+def validate_access_token(credentials):
+
+    # credentials = OAuth2Credentials.from_json(login_session['credentials'])
+    http_auth = httplib2.Http()
+    token_info_uri = credentials.token_info_uri
+    access_token = credentials.access_token
+    url = '{}?access_token={}'.format(token_info_uri, access_token)
+
+    response, content = http_auth.request(url)
+    content = json.loads(content.decode('utf-8'))
+
+    # Check for errors in a call to token info uri
+
+    if 'error' in response:
+        return response.get('error')
+
+    # Verify that token was issued to the right application
+
+    print('CLIENT ID: ' + CLIENT_ID)
+    print("content['aud']: " + content['aud'])
+
+
+
+    if CLIENT_ID != content['aud']:
+        return "Token's client ID doesn't match app's."
+
+    # Verify that the access token is used for the intended user
+
+    if credentials.id_token['sub'] != content['sub']:
+        return "Token's client ID doesn't match app's."
+
+    return None
+
 
 
 # User functions

@@ -9,6 +9,7 @@ from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Category, Item, User
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.client import OAuth2Credentials
+from functools import wraps
 import httplib2
 import json
 import os
@@ -29,37 +30,107 @@ with open('client_secrets.json', 'r') as f:
     CLIENT_ID = json.loads(f.read())['web']['client_id']
 
 
+# Decorators
+
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not is_logged_in():
+            flash('You have to be logged in to use this functionality')
+            return redirect(url_for('mainPage'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+def category_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not category_exists(kwargs['category_id']):
+            flash("Category doesn't exist.")
+            return redirect(url_for('mainPage'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+def item_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not item_exists(kwargs['item_id']):
+            flash("Item doesn't exist.")
+            return redirect(url_for('mainPage'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+def category_owner_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not is_owner_category(getUserID(login_session['email']), kwargs['category_id']):
+            flash("You don't have permissions to do that.")
+            return redirect(url_for('mainPage'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+def item_owner_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not is_owner_item(getUserID(login_session['email']), kwargs['item_id']):
+            flash("You don't have permissions to do that.")
+            return redirect(url_for('mainPage'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
 @app.route('/')
 @app.route('/catalog')
 def mainPage():
     categories = session.query(Category).all()
     items = session.query(Item).limit(10)
+    if 'email' in login_session:
+        user_id = getUserID(login_session['email'])
+    else:
+        user_id = None
+
     if not categories and not items:
         flash('No items to show')
     return render_template('main.html',
                            categories=categories,
                            items=items,
-                           username=logged_in_name())
+                           username=get_username(),
+                           user_id=user_id)
 
 
 @app.route('/category/new', methods=['GET', 'POST'])
+@login_required
 def newCategory():
-    form = CreateCategoryForm()
 
-    # validate_on_submit checks whether it's a POST request and if data is valid
-    if form.validate_on_submit():
-        new_category = Category(name=form.name.data)
-        session.add(new_category)
-        session.commit()
-        flash('New category created.')
+    if not is_logged_in():
+        flash('You have to be logged in to add a category')
         return redirect(url_for('mainPage'))
+    else:
+        form = CreateCategoryForm()
 
-    return render_template('newcategory.html',
-                           form=form,
-                           username=logged_in_name())
+        # validate_on_submit checks whether it's a POST request and if data is valid
+        if form.validate_on_submit():
+            new_category = Category(name=form.name.data,
+                                    user_id=getUserID(login_session['email']))
+            session.add(new_category)
+            session.commit()
+            flash('New category created.')
+            return redirect(url_for('mainPage'))
+
+        return render_template('newcategory.html',
+                               form=form,
+                               username=get_username())
+
 
 
 @app.route('/category/<int:category_id>/edit', methods=['GET', 'POST'])
+@category_required
+@login_required
+@category_owner_required
 def editCategory(category_id):
 
     form = EditCategoryForm()
@@ -73,11 +144,14 @@ def editCategory(category_id):
     return render_template('editcategory.html',
                            form=form,
                            name=category.name,
-                           username=logged_in_name())
+                           username=get_username())
 
 
 @app.route('/category/<int:category_id>/delete', methods=['GET', 'POST'])
-def deleteCategory(category_id):
+@category_required
+@login_required
+@category_owner_required
+def deleteCategory(category_id): # TO DO: delete items associated with the category
     form = DeleteForm()
     category = session.query(Category).filter_by(id=category_id).one()
     if form.validate_on_submit():
@@ -89,22 +163,31 @@ def deleteCategory(category_id):
     return render_template('deletecategory.html',
                            form=form,
                            name=category.name,
-                           username=logged_in_name())
+                           username=get_username())
 
 
 @app.route('/category/<int:category_id>')
 def showCategory(category_id):
     category = session.query(Category).filter_by(id=category_id).one_or_none()
     items = session.query(Item).filter_by(category_id=category_id).all()
+
+    if 'email' in login_session:
+        user_id = getUserID(login_session['email'])
+    else:
+        user_id = None
+
     if not items or not category:
         flash("Category is empty or doesn't exist.")
     return render_template('showcategory.html',
                            category=category,
                            items=items,
-                           username=logged_in_name())
+                           username=get_username(),
+                           user_id=user_id)
 
 
 @app.route('/category/<int:category_id>/items/new', methods=['GET', 'POST'])
+@login_required
+@category_owner_required
 def newItem(category_id):
     form = AddItemForm()
     category = session.query(Category).filter_by(id=category_id).one()
@@ -118,16 +201,19 @@ def newItem(category_id):
         flash('New item created.')
         return redirect(url_for('showCategory',
                                 category_id=category_id,
-                                username=logged_in_name()))
+                                username=get_username()))
 
     return render_template('newitem.html',
                            form=form,
                            category=category,
-                           username=logged_in_name())
+                           username=get_username())
 
 
 @app.route('/category/<int:category_id>/items/<int:item_id>/edit',
            methods=['GET', 'POST'])
+@item_required
+@login_required
+@item_owner_required
 def editItem(category_id, item_id):
     form = EditItemForm()
     category = session.query(Category).filter_by(id=category_id).one()
@@ -141,7 +227,7 @@ def editItem(category_id, item_id):
         flash('Item successfully edited.')
         return redirect(url_for('showCategory',
                                 category_id=category_id,
-                                username=logged_in_name()))
+                                username=get_username()))
 
     form.name.data = item.name
     form.description.data = item.description
@@ -150,11 +236,14 @@ def editItem(category_id, item_id):
                            form=form,
                            category=category,
                            item=item,
-                           username=logged_in_name())
+                           username=get_username())
 
 
 @app.route('/category/<int:category_id>/items/<int:item_id>/delete',
            methods=['GET', 'POST'])
+@item_required
+@login_required
+@item_owner_required
 def deleteItem(category_id, item_id):
     form = DeleteForm()
     category = session.query(Category).filter_by(id=category_id).one()
@@ -166,13 +255,13 @@ def deleteItem(category_id, item_id):
         flash('Item successfully deleted.')
         return redirect(url_for('showCategory',
                                 category_id=category_id,
-                                username=logged_in_name()))
+                                username=get_username()))
 
     return render_template('deleteitem.html',
                            form=form,
                            category=category,
                            item=item,
-                           username=logged_in_name())
+                           username=get_username())
 
 
 @app.route('/category/<int:category_id>/items/<int:item_id>')
@@ -180,7 +269,7 @@ def showItem(category_id, item_id):
     item = session.query(Item).filter_by(id=item_id).one_or_none()
     return render_template('showitem.html',
                            item=item,
-                           username=logged_in_name())
+                           username=get_username())
 
 
 # @app.route('/categorys/JSON')
@@ -236,8 +325,8 @@ def login():
             # Check whether user is registered in a database
 
             user_id = getUserID(login_session['email'])
-            print('EMAIL : ' + login_session['email'])
-            print('USER_ID: ' + str(user_id))
+            # print('EMAIL : ' + login_session['email'])
+            # print('USER_ID: ' + str(user_id))
 
             if user_id is None:
                 # Create user in a database
@@ -249,7 +338,7 @@ def login():
 
             flash("You're logged in as {}.".format(login_session['username']))
 
-        return redirect(url_for('mainPage', username=logged_in_name()))
+        return redirect(url_for('mainPage', username=get_username()))
 
 
 @app.route('/oauth2callback')
@@ -273,8 +362,8 @@ def oauth2callback():
 
         auth_uri = flow.step1_get_authorize_url()
 
-        print('AUTH URI: ')
-        print(auth_uri)
+        # print('AUTH URI: ')
+        # print(auth_uri)
 
         return redirect(auth_uri)
     else:
@@ -283,7 +372,7 @@ def oauth2callback():
         if request.args.get('state', '') != login_session['state']:
             return redirect(url_for('auth_error',
                                     error="CSRF tokens don't match!",
-                                    username=logged_in_name()))
+                                    username=get_username()))
 
         # Get the auth code from request's arguments
 
@@ -302,7 +391,7 @@ def oauth2callback():
         # Save credentials object
         login_session['credentials'] = credentials.to_json()
 
-        return redirect(url_for('login', username=logged_in_name()))
+        return redirect(url_for('login', username=get_username()))
 
 
 @app.route('/logout')
@@ -316,7 +405,7 @@ def logout():
     else:
         flash("You're not logged in")
 
-    return redirect(url_for('mainPage', username=logged_in_name()))
+    return redirect(url_for('mainPage', username=get_username()))
 
 
 @app.route('/auth_error')
@@ -360,15 +449,57 @@ def validate_access_token(credentials):
     return None
 
 
-
 # User functions
 
 # Returns the name of a logged in user, otherwise returns an empty string
-def logged_in_name():
+def is_logged_in():
+    return 'email' in login_session
+
+def get_username():
     if 'username' in login_session:
         return login_session['username']
     else:
         return ''
+
+def is_owner_item(user_id, item_id=-1):
+    item = session.query(Item).filter_by(id=item_id).one_or_none()
+    return item.user_id == user_id
+
+
+def is_owner_category(user_id, category_id=-1):
+    category = session.query(Category).filter_by(id=category_id).one_or_none()
+    if category is None:
+        return False
+    else:
+        return category.user_id == user_id
+
+def item_exists(item_id=-1):
+    item = session.query(Item).filter_by(id=item_id).one_or_none()
+    if item is None:
+        return False
+    else:
+        return True
+
+def category_exists(category_id=-1):
+    category = session.query(Category).filter_by(id=category_id).one_or_none()
+    if category is None:
+        return False
+    else:
+        return True
+
+
+
+@app.context_processor
+def utility_processor():
+
+    return dict(is_owner_item=is_owner_item)
+
+
+
+
+
+
+
 
 def getUserID(email):
     return session.query(User.id).filter_by(email=email).scalar()

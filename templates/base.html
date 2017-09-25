@@ -22,30 +22,53 @@
 
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-      <ul class="nav navbar-nav navbar-right">
-      
-      {% if username != '' %}
-       <span class="navbar-text">{{ username }}</span>
-        <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
-        </li>
+
+      {% if is_logged_in() %}
+        <ul class="nav navbar-nav navbar-left">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('newCategory') }}">Add Category</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('newItem') }}">Add Item</a>
+          </li>
+        </ul>
+
+        <!-- Login/logout buttons and username displayed -->
+
+        <ul class="nav navbar-nav navbar-right">
+          <span class="navbar-text">{{ get_logged_in_username() }}</span>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+          </li>
       {% else %}
-        <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('login') }}">Login</a>
-        </li>
+
+        <ul class="nav navbar-nav navbar-right">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+          </li>
 
       {% endif %}
-
-
-      </ul>
+        </ul>
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->
 </nav>
 
 <div class="container">
 
-{% block page_content %}{% endblock %}
+<!-- Popup with flashed messgaes -->
 
+  <div class="row">
+    <div class="col-sm-12">
+      {% for message in get_flashed_messages() %}
+        <div class="alert alert-warning">
+          <button type="button" class="close" data-dismiss="alert">x</button>
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% block page_content %}{% endblock %}
 </div>
+
 {% endblock %}
 

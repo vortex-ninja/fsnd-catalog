@@ -1,41 +1,20 @@
 {% extends 'base.html' %}
 
-
-
 {% block navbar_content %}
 {% endblock %}
 
 {% block page_content %}
 
 <div class="row">
-  <div class="col-sm-4">
-    {% for message in get_flashed_messages() %}
-      <div class="alert alert-warning">
-        <button type="button" class="close" data-dismiss="alert">x</button>
-        {{ message }}
-      </div>
-    {% endfor %}
+  <div class="col-sm-6">
+    <h3>Category</h3>
+    {{ category.name }}
+  </div>
+
+  <div class="col-sm-6">
+    <h3>Items</h3>
+      {% include "itemlist.html"  %}
   </div>
 </div>
-
-
-
-    <div class="row">
-       <div class="col-sm-6">
-       <h3>Category</h3>
-        {{ category.name }}
-       </div>
-
-       <div class="col-sm-6">
-       <h3>Items</h3>
-        <ul>
-          {% for item in items %}
-            <li>{{ item.id }} -- {{ item.name }} -- {{ item.date_created }} -- {{ item.category_id }}</li>
-          {% endfor %}
-        </ul>
-       </div>
-    </div>
-
-
 
 {% endblock %}

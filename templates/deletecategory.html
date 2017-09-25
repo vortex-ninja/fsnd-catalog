@@ -4,6 +4,6 @@
 
 {% block page_content %}
     <h3 class="page-header">Delete category</h3>
-    <p>Are you sure you want to delete category <i> {{ name }}</i>?</p>
+    <p>All items within the category will be deleted. Are you sure you want to delete the category <i> {{ name }}</i>?</p>
     {{ wtf.quick_form(form) }}
 {% endblock %}

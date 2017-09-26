@@ -1,12 +1,11 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 {% extends 'base.html' %}
 
-
 {% block page_content %}
     <h3 class="page-header">{{ item.name }}</h3>
     <ul>
-      <li>category: <strong>{{ category.name }}</strong></li>
-      <li>description: <strong>{{ item.description }}</strong></li>
-      <li>owner: <strong>{{ get_name(item.user_id) }}</strong></li>
+      <li>category: {{ category.name }}</li>
+      <li>description: {{ item.description }}</li>
+      <li>owner: {{ get_name(item.user_id) }}</li>
     </ul>
 {% endblock %}

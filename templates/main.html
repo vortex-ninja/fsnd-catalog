@@ -1,12 +1,7 @@
 {% extends 'base.html' %}
-
 {% block navbar_content %}
 {% endblock %}
-
 {% block page_content %}
-
-
-
 
 <div class="row">
 
@@ -18,7 +13,7 @@
       {% for category in categories %}
         <div class="row">
           <div class="col-sm-8">
-          <p class="bg-warning">
+          <p class="bg-warning" style="text-indent: 1.5em">
             <a href="{{ url_for('showCategory', category_id=category.id) }}">{{ category.name }}</a>
           </p>
           </div>

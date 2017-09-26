@@ -4,9 +4,9 @@
 Project 'Catalog' for Udacity Fullstack Nanodegree program. Basic manager for categories and items with login functionality (Google Sign in).
 
 ### Goals
-1. Implement and learn CRUD functionality
-2. Connect application to the database
-3. Implement Sign In with google
+1. Implement and learn CRUD functionality.
+2. Connect application to the database.
+3. Implement Sign In with google.
 
 ### Setup
 1. Run `database_setup.py` to create the database.
@@ -16,19 +16,19 @@ Project 'Catalog' for Udacity Fullstack Nanodegree program. Basic manager for ca
 
 ### Routes
 
-1. logging in: `/login`
-2. logging out: `/logout`
-3. main page: `/` or `/catalog`
-4. create category: `/category/new` - only logged in users
-5. edit category: `/category/<category_id>/edit` - only logged in owner of the category
-6. delete category: `/category/<category_id>/delete` - only logged in owner of the category
-7. show category: `/category/<category_id>`
-8. new item: `/items/new` - only logged in users
-9. edit item: `/category/<category_id>/items/<item_id>/edit` - only logged in owner of the item
-10. delete item: `/category/<category_id>/items/<item_id>/delete` - only logged in owner of the item
-11. show item: `/category/<category_id>/items/<item_id>` 
-12. JSON endpoint, category list: `/categories/JSON`
-13. JSON endpoint, items list: `/category/<category_id>/items/JSON`
+1. logging in: `/login`.
+2. logging out: `/logout`.
+3. main page: `/` or `/catalog`.
+4. create category: `/category/new` - only logged in users.
+5. edit category: `/category/<category_id>/edit` - only logged in owner of the category.
+6. delete category: `/category/<category_id>/delete` - only logged in owner of the category.
+7. show category: `/category/<category_id>`.
+8. new item: `/items/new` - only logged in users.
+9. edit item: `/category/<category_id>/items/<item_id>/edit` - only logged in owner of the item.
+10. delete item: `/category/<category_id>/items/<item_id>/delete` - only logged in owner of the item.
+11. show item: `/category/<category_id>/items/<item_id>`.
+12. JSON endpoint, category list: `/categories/JSON`.
+13. JSON endpoint, items list: `/category/<category_id>/items/JSON`.
 
 
 ### How to use

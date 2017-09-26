@@ -38,7 +38,7 @@ class Item(Base):
     name = Column(String(), nullable=False)
     id = Column(Integer, primary_key=True)
     description = Column(String())
-    date_created = Column(DateTime(timezone=True), server_default=func.now()) # doesn't work properly
+    date_created = Column(DateTime(timezone=True), server_default=func.now())
     category_id = Column(Integer, ForeignKey('category.id'))
     category = relationship(Category)
     user_id = Column(Integer, ForeignKey('user.id'))

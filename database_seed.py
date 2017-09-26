@@ -1,9 +1,9 @@
 # This was originally lotsofmenus.py from the course
+# Populates database with initial values
 
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-
 from database_setup import Category, Base, Item, User
 
 

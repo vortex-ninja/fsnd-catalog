@@ -53,7 +53,8 @@ def get_name(id):
 
 
 def createUser(login_session):
-    new_user = User(name=login_session['username'], email=login_session['email'])
+    new_user = User(name=login_session['username'],
+                    email=login_session['email'])
     session.add(new_user)
     session.commit()
     return new_user.id

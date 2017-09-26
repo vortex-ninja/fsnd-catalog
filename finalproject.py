@@ -33,7 +33,8 @@ with open('client_secrets.json', 'r') as f:
     CLIENT_ID = json.loads(f.read())['web']['client_id']
 
 
-# Decorators
+# Decorators to check whether user is logged in,
+# is owner of an item or category and whether item or category exists
 
 
 def login_required(f):
@@ -160,7 +161,7 @@ def deleteCategory(category_id):
     if form.validate_on_submit():
         session.delete(category)
 
-        # Deletes item in a deleted category
+        # Deletes items in a deleted category
         for item in items:
             session.delete(item)
         session.commit()
@@ -303,8 +304,6 @@ def login():
             response, content = h.request(url)
             content = json.loads(content.decode('utf-8'))
 
-
-
             # Save user data to login session
 
             login_session['email'] = content['email']
@@ -313,8 +312,6 @@ def login():
             # Check whether user is registered in a database
 
             user_id = getUserID(login_session['email'])
-            # print('EMAIL : ' + login_session['email'])
-            # print('USER_ID: ' + str(user_id))
 
             if user_id is None:
                 # Create user in a database
@@ -326,14 +323,14 @@ def login():
 
             flash("You're logged in as {}.".format(login_session['username']))
 
-        return redirect(url_for('mainPage', username=get_logged_in_username()))
+        return redirect(url_for('mainPage'))
 
 
 @app.route('/oauth2callback')
 def oauth2callback():
 
-    # As per advice from Google this view doesn't render any html in order not to
-    # reveal any query parameters in the url (like state token, or auth code)
+    # As per advice from Google this view doesn't render any html in order not
+    # to reveal any query parameters in the url (like state token, or auth code)
     # It only redirects to other views
 
     flow = flow_from_clientsecrets('client_secrets.json',
@@ -349,18 +346,14 @@ def oauth2callback():
         flow.params['state'] = state
 
         auth_uri = flow.step1_get_authorize_url()
-
-        # print('AUTH URI: ')
-        # print(auth_uri)
-
         return redirect(auth_uri)
+
     else:
         # Check if the state token returned in the response
         # is the same as one saved in login_session
         if request.args.get('state', '') != login_session['state']:
             return redirect(url_for('auth_error',
-                                    error="CSRF tokens don't match!",
-                                    username=get_logged_in_username()))
+                                    error="CSRF tokens don't match!"))
 
         # Get the auth code from request's arguments
 
@@ -379,7 +372,7 @@ def oauth2callback():
         # Save credentials object
         login_session['credentials'] = credentials.to_json()
 
-        return redirect(url_for('login', username=get_logged_in_username()))
+        return redirect(url_for('login'))
 
 
 @app.route('/logout')
@@ -393,7 +386,7 @@ def logout():
     else:
         flash("You're not logged in")
 
-    return redirect(url_for('mainPage', username=get_logged_in_username()))
+    return redirect(url_for('mainPage'))
 
 
 @app.route('/auth_error')
@@ -404,10 +397,8 @@ def auth_error():
 
 # Access token validation
 
-
 def validate_access_token(credentials):
 
-    # credentials = OAuth2Credentials.from_json(login_session['credentials'])
     http_auth = httplib2.Http()
     token_info_uri = credentials.token_info_uri
     access_token = credentials.access_token
@@ -468,8 +459,8 @@ def get_logged_in_username():
     else:
         return ''
 
-# Makes functions available in templates
 
+# Makes functions available in templates
 
 @app.context_processor
 def utility_processor():
@@ -479,6 +470,8 @@ def utility_processor():
                 get_logged_in_username=get_logged_in_username,
                 get_name=get_name)
 
+
+# Starts flask server
 
 if __name__ == '__main__':
     app.secret_key = 'Top secret key'

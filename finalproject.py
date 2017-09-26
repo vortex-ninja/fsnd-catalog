@@ -6,7 +6,7 @@ from forms import CreateCategoryForm, EditCategoryForm, DeleteForm
 from forms import AddItemForm, EditItemForm
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from database_setup import Base, Category, Item, User
+from database_setup import Base, Category, Item
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.client import OAuth2Credentials
 from functools import wraps
@@ -33,7 +33,7 @@ with open('client_secrets.json', 'r') as f:
     CLIENT_ID = json.loads(f.read())['web']['client_id']
 
 
-# DECORATORS
+# Decorators
 
 
 def login_required(f):
@@ -69,7 +69,8 @@ def item_required(f):
 def category_owner_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not is_owner_category(getUserID(login_session['email']), kwargs['category_id']):
+        if not is_owner_category(getUserID(login_session['email']),
+                                 kwargs['category_id']):
             flash("You don't have permissions to do that.")
             return redirect(url_for('mainPage'))
         return f(*args, **kwargs)
@@ -79,15 +80,15 @@ def category_owner_required(f):
 def item_owner_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not is_owner_item(getUserID(login_session['email']), kwargs['item_id']):
+        if not is_owner_item(getUserID(login_session['email']),
+                             kwargs['item_id']):
             flash("You don't have permissions to do that.")
             return redirect(url_for('mainPage'))
         return f(*args, **kwargs)
     return decorated_function
 
 
-
-# VIEWS
+# Views
 
 @app.route('/')
 @app.route('/catalog')
@@ -126,7 +127,6 @@ def newCategory():
 
         return render_template('newcategory.html',
                                form=form)
-
 
 
 @app.route('/category/<int:category_id>/edit', methods=['GET', 'POST'])
@@ -175,7 +175,8 @@ def deleteCategory(category_id):
 @app.route('/category/<int:category_id>')
 def showCategory(category_id):
     category = session.query(Category).filter_by(id=category_id).one_or_none()
-    items = session.query(Item).filter_by(category_id=category_id).order_by(Item.date_created.desc()).all()
+    items = session.query(Item).filter_by(category_id=category_id)
+    items = items.order_by(Item.date_created.desc()).all()
 
     user_id = get_logged_in_ID()
 
@@ -273,16 +274,7 @@ def showItem(category_id, item_id):
                            category=category)
 
 
-@app.route('/categories/JSON')
-def categoriesJSON():
-    categories = session.query(Category).all()
-    return jsonify(categories=[category.serialize for category in categories])
-
-
-@app.route('/category/<int:category_id>/items/JSON')
-def itemsJSON(category_id):
-    items = session.query(Item).filter_by(category_id=category_id).all()
-    return jsonify(items=[item.serialize for item in items])
+# OAuth2 views and functions
 
 
 @app.route('/login')
@@ -406,7 +398,9 @@ def logout():
 
 @app.route('/auth_error')
 def auth_error():
-    return request.args.get('error')
+    error = request.args.get('error')
+    return render_template('error.html', error=error)
+
 
 # Access token validation
 
@@ -429,11 +423,6 @@ def validate_access_token(credentials):
 
     # Verify that token was issued to the right application
 
-    print('CLIENT ID: ' + CLIENT_ID)
-    print("content['aud']: " + content['aud'])
-
-
-
     if CLIENT_ID != content['aud']:
         return "Token's client ID doesn't match app's."
 
@@ -445,11 +434,26 @@ def validate_access_token(credentials):
     return None
 
 
+# JSON endpoints
+
+@app.route('/categories/JSON')
+def categoriesJSON():
+    categories = session.query(Category).all()
+    return jsonify(categories=[category.serialize for category in categories])
+
+
+@app.route('/category/<int:category_id>/items/JSON')
+def itemsJSON(category_id):
+    items = session.query(Item).filter_by(category_id=category_id).all()
+    return jsonify(items=[item.serialize for item in items])
+
+
 # Helper functions
 
 
 def is_logged_in():
     return 'email' in login_session
+
 
 def get_logged_in_ID():
     if is_logged_in():
@@ -457,13 +461,14 @@ def get_logged_in_ID():
     else:
         return None
 
+
 def get_logged_in_username():
     if 'username' in login_session:
         return login_session['username']
     else:
         return ''
 
-
+# Makes functions available in templates
 
 
 @app.context_processor
@@ -473,10 +478,6 @@ def utility_processor():
                 is_owner_category=is_owner_category,
                 get_logged_in_username=get_logged_in_username,
                 get_name=get_name)
-
-
-
-
 
 
 if __name__ == '__main__':

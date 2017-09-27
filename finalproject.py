@@ -111,10 +111,6 @@ def mainPage():
 @login_required
 def newCategory():
 
-    if not is_logged_in():
-        flash('You have to be logged in to add a category')
-        return redirect(url_for('mainPage'))
-    else:
         form = CreateCategoryForm()
 
         # validate_on_submit checks whether it's a POST request and if data is valid

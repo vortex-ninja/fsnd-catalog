@@ -32,8 +32,8 @@ session = DBSession()
 
 # Get client id from json secret file
 
-with open('client_secrets.json', 'r') as f:
-    CLIENT_ID = json.loads(f.read())['web']['client_id']
+
+CLIENT_ID = os.environ["CLIENT_ID"]
 
 
 # Decorators to check whether user is logged in,

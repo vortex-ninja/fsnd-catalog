@@ -3,6 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
 from sqlalchemy.sql import func
+import os
 
 Base = declarative_base()
 
@@ -58,5 +59,5 @@ class Item(Base):
 
 # This should go at the end of the file
 
-engine = create_engine('sqlite:///catalog.db')
+engine = create_engine(os.environ["DATABASE_URL"])
 Base.metadata.create_all(engine)

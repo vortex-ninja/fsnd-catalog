@@ -24,7 +24,7 @@ app.config['SECRET_KEY'] = os.environ["SECRET_KEY"]
 app.config['DEBUG'] = os.environ["DEBUG"]
 Bootstrap(app)
 
-engine = create_engine('sqlite:///catalog.db')
+engine = create_engine(os.environ["DATABASE_URL"])
 Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()

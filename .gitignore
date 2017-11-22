@@ -5,9 +5,11 @@
 
 *.db
 
-# pycache
+# pycache and pyc files
 
 __pycache__/*
+*.pyc
+
 
 # virtualenv
 
@@ -16,3 +18,8 @@ ENV/*
 # test files
 
 database_test.py
+
+# env variables and .python-version
+
+.env
+.python-version

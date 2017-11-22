@@ -1,0 +1,18 @@
+# json config files
+*.json
+
+# sqlite development databases
+
+*.db
+
+# pycache
+
+__pycache__/*
+
+# virtualenv
+
+ENV/*
+
+# test files
+
+database_test.py

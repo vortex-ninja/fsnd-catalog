@@ -19,6 +19,9 @@ import os
 import hashlib
 
 app = Flask(__name__)
+app.config['PREFERRED_URL_SCHEME'] = os.environ["PREFERRED_URL_SCHEME"]
+app.config['SECRET_KEY'] = os.environ["SECRET_KEY"]
+app.config['DEBUG'] = os.environ["DEBUG"]
 Bootstrap(app)
 
 engine = create_engine('sqlite:///catalog.db')

@@ -1,5 +1,8 @@
 # fsnd-catalog
 
+### Live demo
+https://fsnd-catalog-pro.herokuapp.com/
+
 ### Overview
 Project 'Catalog' for Udacity Fullstack Nanodegree program. Basic manager for categories and items with login functionality (Google Sign in).
 
@@ -9,10 +12,11 @@ Project 'Catalog' for Udacity Fullstack Nanodegree program. Basic manager for ca
 3. Implement Sign In with google.
 
 ### Setup
-1. Run `database_setup.py` to create the database.
-2. Run `database_seed.py` to initially populate database (optional step).
-3. Start server with `finalproject.py`.
-4. Application will be available at `localhost:5050`.
+1. You will require a `client_secrets.json` file from https://console.developers.google.com/ for OAuth2 authentication to work. It should be placed in the directory where `app.py` is located.
+2. Set environment variables with `source .env`.
+3. Run `database_setup.py` to create the database.
+4. Run `database_seed.py` to initially populate database (optional step).
+5. Start application by running `flask run` from the directory where `app.py` file is located.
 
 ### Routes
 

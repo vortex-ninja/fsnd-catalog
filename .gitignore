@@ -19,7 +19,6 @@ ENV/*
 
 database_test.py
 
-# env variables and .python-version
+# .python-version
 
-.env
 .python-version

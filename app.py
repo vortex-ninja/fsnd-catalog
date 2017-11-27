@@ -465,11 +465,3 @@ def utility_processor():
                 is_owner_category=is_owner_category,
                 get_logged_in_username=get_logged_in_username,
                 get_name=get_name)
-
-
-# Starts flask server
-
-if __name__ == '__main__':
-    app.secret_key = 'Top secret key'
-    app.debug = True
-    app.run(host='0.0.0.0', port=5050)
